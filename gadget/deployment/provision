@@ -1,0 +1,51 @@
+#!/bin/bash
+set -e
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
+if [[ -d $1 ]]; then
+  INSTALL_SOURCE_DIR=$(readlink -f $1)
+  echo "Using local directory $INSTALL_SOURCE_DIR as source for installation"
+else
+  INSTALL_SOURCE_URL=https://github.com/andrewn/sensor-gadget
+  echo "Using github URL $INSTALL_SOURCE_URL as source for installation"
+fi
+
+echo "*** Install node"
+mkdir -pv /opt/node
+curl -L https://nodejs.org/dist/v8.9.4/node-v8.9.4-linux-armv6l.tar.gz | tar xz --strip-components 1 -C /opt/node
+ln -sf /opt/node/bin/node /usr/local/bin/node
+ln -sf /opt/node/bin/npm /usr/local/bin/npm
+/opt/node/bin/npm config set prefix /usr/local
+
+echo "*** Enable SPI (RFID reader)"
+raspi-config nonint do_spi 0
+
+echo "*** Fetch code"
+mkdir -p /opt
+cd /opt
+
+if [ -z $INSTALL_SOURCE_DIR ]; then 
+  git clone --depth=1 $INSTALL_SOURCE_URL
+else
+  cp -R $INSTALL_SOURCE_DIR /opt/sensor-gadget
+fi
+
+echo "*** Install RFID reader"
+cd sensor-gadget/gadget
+JOBS=MAX npm install --unsafe-perm --production # use all cores
+
+echo "*** Install startup scripts"
+cp deployment/scripts/create-usb-gadgets /boot/
+cp deployment/systemd/* /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable create-usb-gadgets
+systemctl enable sensors
+
+echo "*** Removes ethernet gadget from cmdline.txt"
+sed -i 's/modules-load=dwc2,g_ether//g' /boot/cmdline.txt
+
+echo "Update complete, please reboot to continue"

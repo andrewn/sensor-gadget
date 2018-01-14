@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+const init = require('../index');
+
+const serialPath = process.argv[2] || process.env.SERIAL_PATH;
+
+const handler = (err, data) => {
+  if (err) {
+    console.log('Error: ', err.message);
+  } else {
+    console.log(data);
+  }
+};
+
+try {
+  const serial = init({ handler, serialPath });
+  console.log('Ready...');
+} catch (err) {
+  console.error(
+    `First argument must be path to serial device to listen to
+  e.g. node index /dev/cu.usbmodem91922`
+  );
+
+  console.error(`(Error: ${err.message}`);
+  process.exit(1);
+}

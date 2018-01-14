@@ -1,0 +1,16 @@
+{
+  "name": "sensor-gadget",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index"
+  },
+  "keywords": [],
+  "author": "Andrew Nicolaou <me@andrewnicolaou.co.uk>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "mfrc522-rpi": "^1.1.0",
+    "serialport": "^6.0.4"
+  }
+}

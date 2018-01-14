@@ -1,0 +1,13 @@
+[Unit]
+Description=Sensor gadget
+
+[Service]
+WorkingDirectory=/opt/sensor-gadget/gadget
+ExecStart=/usr/local/bin/npm start /dev/ttyGS0
+Restart=on-failure
+StandardOutput=syslog
+SyslogIdentifier=sensor-gadget
+Type=idle
+
+[Install]
+WantedBy=multi-user.target
